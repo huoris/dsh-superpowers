@@ -1,4 +1,4 @@
-# superpowers-dsh
+# dsh-superpowers
 
 [obra/superpowers](https://github.com/obra/superpowers) (v7.0.1) ported to the
 DeepSeek Harness (DSH) as a profile bundle.
@@ -24,7 +24,7 @@ following the [Superpowers porting guide](https://github.com/obra/superpowers/bl
 ## Install
 
 ```sh
-dsh plugin --profile <profile> add Huoris/superpowers-dsh
+dsh plugin --profile <profile> add Huoris/dsh-superpowers
 ```
 
 or search for **Superpowers** in a DSH plugin marketplace (e.g. dsh-market)

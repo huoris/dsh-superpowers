@@ -1,5 +1,5 @@
 {
-  "name": "superpowers-dsh",
+  "name": "dsh-superpowers",
   "version": "7.0.1",
   "private": true,
   "description": "Superpowers skill library for the DeepSeek Harness (vendored from obra/superpowers v7.0.1)",

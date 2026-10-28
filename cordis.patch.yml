@@ -8,5 +8,5 @@
 #      opt-in (porting guide Part 2 hard requirement).
 - insert:
     - id: superpowers
-      name: superpowers-dsh
+      name: dsh-superpowers
       inject: [skills, systemPrompt]
