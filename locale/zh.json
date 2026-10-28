@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Superpowers 技能库",
+    "description": "安装 Superpowers 技能库（obra/superpowers v7.0.1）：15 个过程技能（brainstorming、test-driven-development、systematic-debugging 等），并在每次会话开始时自动注入 using-superpowers 引导与 DeepSeek Harness 工具映射。"
+  }
+}

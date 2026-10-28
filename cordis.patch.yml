@@ -1,0 +1,12 @@
+# superpowers-dsh bundle layer.
+# Inserts one Host-plane plugin that:
+#   1. registers every vendored skills/<name>/SKILL.md as a runtime skill on
+#      ctx.skills, and
+#   2. registers the using-superpowers session-start bootstrap (wrapped in
+#      <EXTREMELY_IMPORTANT>, with a DeepSeek Harness tool mapping) as a
+#      system-prompt section, so every session gets it with no per-session
+#      opt-in (porting guide Part 2 hard requirement).
+- insert:
+    - id: superpowers
+      name: superpowers-dsh
+      inject: [skills, systemPrompt]

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Superpowers",
+    "description": "Installs the Superpowers skill library (obra/superpowers v7.0.1): 15 process skills (brainstorming, test-driven-development, systematic-debugging, ...) plus the using-superpowers session-start bootstrap with a DeepSeek Harness tool mapping."
+  }
+}
