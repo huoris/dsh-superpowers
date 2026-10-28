@@ -1,5 +1,7 @@
 # dsh-superpowers
 
+English | [中文](./README.zh.md)
+
 [obra/superpowers](https://github.com/obra/superpowers) (v7.0.1) ported to the
 DeepSeek Harness (DSH) as a profile bundle.
 
@@ -54,4 +56,4 @@ is new code, MIT, © 2026 Huoris. See [LICENSE](./LICENSE).
 ## Uninstall
 
 Remove the bundle via the DSH Plugin Manager or
-`dsh plugin --profile <profile> remove superpowers-dsh`.
+`dsh plugin --profile <profile> remove dsh-superpowers`.
