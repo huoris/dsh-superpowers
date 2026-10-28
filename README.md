@@ -23,6 +23,27 @@ following the [Superpowers porting guide](https://github.com/obra/superpowers/bl
   so the bootstrap needs no dedup guard and survives compaction.
 - Zero runtime dependencies.
 
+## Feature parity
+
+Everything in obra/superpowers that applies at runtime is replicated here:
+
+| Upstream capability | In this bundle |
+|---|---|
+| 15 skills, 84 files (SKILL.md + references / scripts / prompts / templates) | Vendored verbatim — the `skills/` tree is file-for-file hash-identical to upstream v7.0.1, except the two changes the porting guide sanctions (see [Attribution](#attribution--scope-of-changes)) |
+| Session-start bootstrap (`using-superpowers` wrapped in `<EXTREMELY_IMPORTANT>`) | A system-prompt section, re-assembled before every model step — no dedup guard needed and it survives compaction |
+| Per-harness tool mapping (`references/<harness>-tools.md`) | `skills/using-superpowers/references/dsh-tools.md`, linked from the Platform Adaptation list and inlined in the bootstrap |
+| Skill sub-resources (references, scripts, prompts, templates) | Each skill's resource base points at its own directory; files load with the `read` tool |
+| Bundled scripts (`*.sh`, `*.cjs`, `*.js`) | Run through their interpreter (`bash`, `node`); on Windows, Git Bash provides `bash` (watch for the WSL launcher shadowing it on PATH) |
+| Subagent workflows (dispatching-parallel-agents, subagent-driven-development) | DSH `subagent` / `subagent_fork` tools |
+| Task tracking | `todo_write` |
+| Web lookups (diagnosing-superpowers, brainstorming recon) | `web_search` / `web_fetch` / the built-in browser |
+| Git worktrees (using-git-worktrees) | System `git` from any DSH shell |
+
+Not shipped, matching what upstream's own per-harness distributions exclude: the other platforms' manifests and hooks (`.claude-plugin/`, `hooks/`, …), marketplace metadata, and dev tooling (`tests/`, `evals/`, release scripts). Those are install machinery for other harnesses; their DSH equivalents are this bundle's `index.js` and `cordis.patch.yml`.
+
+Verified with the upstream acceptance test: in a fresh session, the prompt
+"Let's make a react todo list" auto-invokes `brainstorming` before any code.
+
 ## Install
 
 ```sh

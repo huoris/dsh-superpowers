@@ -23,6 +23,30 @@ Harness（DSH）移植版，以 profile bundle 形式安装。
   保护，也不会被上下文压缩丢失。
 - 零运行时依赖。
 
+## 功能对照
+
+obra/superpowers 中所有在运行时生效的能力，本 bundle 均已复刻：
+
+| 上游能力 | 本 bundle 中的实现 |
+|---|---|
+| 15 个技能、84 个文件（SKILL.md + references / scripts / prompts / templates） | 逐字 vendor——`skills/` 目录与上游 v7.0.1 逐文件哈希一致，仅含移植指南允许的两处改动（见[署名与改动范围](#署名与改动范围)） |
+| 会话启动引导（`<EXTREMELY_IMPORTANT>` 包裹的 `using-superpowers`） | 注册为系统提示段，每次模型步骤前重新装配——无需去重保护，上下文压缩后不丢失 |
+| 各平台工具映射（`references/<harness>-tools.md`） | `skills/using-superpowers/references/dsh-tools.md`，从 Platform Adaptation 列表链接，并内联在引导文本中 |
+| 技能子资源（references、scripts、prompts、templates） | 每个技能的资源根目录指向自身目录，用 `read` 工具按需加载 |
+| 技能内置脚本（`*.sh`、`*.cjs`、`*.js`） | 通过解释器执行（`bash`、`node`）；Windows 上由 Git Bash 提供 `bash`（注意 PATH 里的 `bash` 可能被 WSL 启动器抢占） |
+| 子代理工作流（dispatching-parallel-agents、subagent-driven-development） | DSH 的 `subagent` / `subagent_fork` 工具 |
+| 任务清单跟踪 | `todo_write` |
+| 网络查询（diagnosing-superpowers、brainstorming 的 recon） | `web_search` / `web_fetch` / 内置浏览器 |
+| Git worktree（using-git-worktrees） | 任意 DSH shell 中的系统 `git` |
+
+刻意不打包的部分（与上游自身对各平台的分发范围一致）：其他平台的清单与 hooks
+（`.claude-plugin/`、`hooks/` 等）、marketplace 元数据、开发测试工具
+（`tests/`、`evals/`、发布脚本）。它们是其他 harness 的安装机构；DSH 的等价物
+就是本 bundle 的 `index.js` 与 `cordis.patch.yml`。
+
+已用上游验收测试验证：全新会话中发送 "Let's make a react todo list"，会在写任何
+代码之前自动触发 `brainstorming`。
+
 ## 安装
 
 ```sh

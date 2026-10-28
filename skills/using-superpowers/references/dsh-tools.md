@@ -30,6 +30,10 @@ actions like this:
 - **Bundled scripts**: some skills invoke scripts shipped next to them (e.g.
   `scripts/foo.sh`). Invoke them through their interpreter — `bash
   scripts/foo.sh` — never as a bare `./scripts/foo.sh`; installers may strip
-  executable bits. On Windows, Git Bash provides `bash`.
+  executable bits. **Windows caveat:** the `bash` on PATH may be the WSL
+  launcher instead of Git Bash. Check with `bash --version` — you want
+  `x86_64-pc-msys` (Git Bash); if you see WSL output, call Git Bash's bash.exe
+  directly (it lives in the Git install's `bin\` directory, e.g.
+  `& "C:\Program Files\Git\bin\bash.exe" scripts/foo.sh`).
 - **using-superpowers itself** is injected at session start as a system-prompt
   section by the `superpowers-dsh` bundle; do not load it via the `skill` tool.
