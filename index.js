@@ -7,6 +7,9 @@
 //   2. the `using-superpowers` session-start bootstrap as a system-prompt
 //      section — <EXTREMELY_IMPORTANT>-wrapped, frontmatter stripped, with the
 //      DeepSeek Harness tool mapping inlined (porting guide Part 5, Step 3/4).
+//      The mapping resolves `read`/`glob`/`grep`/shell names against the live
+//      scope surface, so replacement bundles (dsh-ops publishes `ops_*` and
+//      `bash`) never get a mapping that names a hidden tool.
 //
 // A system-prompt section is the harness-sanctioned injection point
 // (practices: "Add prompt text with ctx.systemPrompt.section()"). It is
@@ -61,10 +64,17 @@ export function apply(ctx) {
 		registered += 1;
 	}
 
+	// Parsed once at mount: a missing using-superpowers body must fail the
+	// install loudly, not silently degrade every later assembly.
+	const bootstrapBody = readBootstrap(skillsRoot);
+
 	ctx.systemPrompt.section({
 		name: BOOTSTRAP_SECTION,
 		order: BOOTSTRAP_ORDER,
-		text: buildBootstrap(skillsRoot),
+		// Resolved per assembly so the mapping names the tools this scope can
+		// actually call — dsh-ops replaces `read`/`glob`/`grep` with `ops_*` and
+		// the shell with `bash`. A static mapping keeps naming the hidden tool.
+		text: context => buildBootstrap(bootstrapBody, resolveToolNames(ctx, context)),
 		// Skill bodies may contain literal {{...}} text; never interpolate.
 		interpolate: false
 	});
@@ -120,20 +130,64 @@ function unquoteScalar(value) {
 	return trimmed;
 }
 
-/** Assemble the bootstrap: preamble + using-superpowers body + DSH tool mapping. */
-function buildBootstrap(skillsRoot) {
+/** Read the using-superpowers body; a missing body fails the mount. */
+function readBootstrap(skillsRoot) {
 	let body = "";
 	try {
 		const parsed = parseSkillFile(readFileSync(join(skillsRoot, "using-superpowers", "SKILL.md"), "utf8"));
 		if (parsed !== undefined) body = parsed.body;
 	} catch {
-		// Fall through with an empty body; the preamble and mapping still load.
+		// Fall through with an empty body; the caller reports the broken install.
 	}
 	if (body.length === 0) {
 		// using-superpowers/SKILL.md is missing from the bundle; fail loud so
 		// the broken install is diagnosed instead of silently half-working.
 		throw new Error("superpowers: skills/using-superpowers/SKILL.md is missing from the installed bundle");
 	}
+	return body;
+}
+
+/**
+ * Pick the names the mapping may mention for the actions bundles replace.
+ *
+ * dsh-ops publishes `ops_inspect_local_file` / `ops_glob` / `ops_grep` and a
+ * `bash` shell for the official tools it hides, and it denies those official
+ * tools at dispatch time rather than removing their definitions, so
+ * `tools.get("read", scope)` still answers "present" while the model cannot
+ * call it. The published replacement is therefore the dependable signal, not
+ * the official name. Resolution runs per assembly so installing, disabling or
+ * upgrading a replacement bundle flips the mapping with the live surface.
+ *
+ * @param ctx - the plugin context, used for the tools registry lookup.
+ * @param context - assembly context carrying the scope whose surface to read.
+ * @returns the four mapping names; legacy names when no registry is available.
+ */
+function resolveToolNames(ctx, context) {
+	const tools = ctx.get("tools");
+	const legacy = { read: "read", glob: "glob", grep: "grep", shell: "pwsh" };
+	if (tools === undefined) return legacy;
+	const visible = name => {
+		try {
+			return tools.get(name, context?.scope) !== undefined;
+		} catch {
+			// An unreadable registry keeps the legacy spelling: a momentarily
+			// failing lookup must not strip the mapping from the prompt.
+			return undefined;
+		}
+	};
+	const pick = candidates => candidates.find(name => visible(name)) ?? candidates[candidates.length - 1];
+	const ops = visible("ops_inspect_local_file") === true;
+	return {
+		read: pick(ops ? ["ops_inspect_local_file", "read"] : ["read"]),
+		glob: pick(ops ? ["ops_glob", "glob"] : ["glob"]),
+		grep: pick(ops ? ["ops_grep", "grep"] : ["grep"]),
+		// dsh-ops hides `pwsh` and publishes `bash`; a plain DSH keeps `pwsh`.
+		shell: pick(ops ? ["bash", "pwsh"] : ["pwsh", "bash"])
+	};
+}
+
+/** Assemble the bootstrap: preamble + using-superpowers body + DSH tool mapping. */
+function buildBootstrap(body, names) {
 	return [
 		"<EXTREMELY_IMPORTANT>",
 		"You have superpowers: a library of process skills is installed in this harness.",
@@ -151,9 +205,9 @@ function buildBootstrap(skillsRoot) {
 		"Skills name actions, not tools. On this harness, translate actions like this:",
 		"",
 		"- *invoke a skill* → the `skill` tool (parameter `name`; see available_skills).",
-		"- *read a file* → `read` · *create/replace a file* → `write` · *targeted edit* → `edit`.",
-		"- *find files by pattern* → `glob` · *search file contents* → `grep`.",
-		"- *run shell commands / verification* → `pwsh` (PowerShell). Long or blocking commands:",
+		`- *read a file* → \`${names.read}\` · *create/replace a file* → \`write\` · *targeted edit* → \`edit\`.`,
+		`- *find files by pattern* → \`${names.glob}\` · *search file contents* → \`${names.grep}\`.`,
+		`- *run shell commands / verification* → \`${names.shell}\`${names.shell === "pwsh" ? " (PowerShell)" : ""}. Long or blocking commands:`,
 		"  pass `run_in_background`, then collect with `job_output` / stop with `job_kill`.",
 		"- *dispatch a subagent / task tool* → `subagent` (self-contained task) or",
 		"  `subagent_fork` (inherits this conversation); continue or steer it with",

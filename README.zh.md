@@ -19,8 +19,11 @@ Harness（DSH）移植版，以 profile bundle 形式安装。
   技能正文以 `<EXTREMELY_IMPORTANT>` 包裹，并附带 DeepSeek Harness 工具映射
   （`skill`/`read`/`write`/`edit`/`glob`/`grep`/`pwsh`/`subagent`/
   `todo_write`/`ask_user_question`/`web_search`/`web_fetch`/`read_image`/
-  `dsh_browser_*`）。提示段在每次模型步骤前重新装配，因此引导天然不需要去重
-  保护，也不会被上下文压缩丢失。
+  `dsh_browser_*`）。其中 `read`/`glob`/`grep`/shell 的名字在每次装配时按实际
+  工具面解析：装上 dsh-ops 这类替换型 bundle 时，映射自动写成
+  `ops_inspect_local_file`/`ops_glob`/`ops_grep`/`bash`，不会指向会话里调不
+  到的工具。提示段在每次模型步骤前重新装配，因此引导天然不需要去重保护，也
+  不会被上下文压缩丢失。
 - 零运行时依赖。
 
 ## 功能对照

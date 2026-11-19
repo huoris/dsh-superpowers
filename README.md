@@ -19,8 +19,11 @@ following the [Superpowers porting guide](https://github.com/obra/superpowers/bl
   `using-superpowers` skill body wrapped in `<EXTREMELY_IMPORTANT>`, plus a
   DeepSeek Harness tool mapping (`skill`/`read`/`write`/`edit`/`glob`/`grep`/
   `pwsh`/`subagent`/`todo_write`/`ask_user_question`/`web_search`/`web_fetch`/
-  `read_image`/`dsh_browser_*`). Sections re-assemble before every model step,
-  so the bootstrap needs no dedup guard and survives compaction.
+  `read_image`/`dsh_browser_*`). The `read`/`glob`/`grep`/shell names resolve
+  against the live tool surface at every assembly, so a replacement bundle such
+  as dsh-ops gets `ops_inspect_local_file`/`ops_glob`/`ops_grep`/`bash` instead
+  of tools the session cannot call. Sections re-assemble before every model
+  step, so the bootstrap needs no dedup guard and survives compaction.
 - Zero runtime dependencies.
 
 ## Feature parity

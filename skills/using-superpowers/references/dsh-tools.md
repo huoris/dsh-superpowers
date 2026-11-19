@@ -6,12 +6,12 @@ actions like this:
 | Action | DSH tool |
 |---|---|
 | invoke a skill | the `skill` tool, parameter `name` (catalog is listed at session start as `available_skills`) |
-| read a file | `read` |
+| read a file | `read` (dsh-ops replaces it with `ops_inspect_local_file`) |
 | create or replace a file | `write` |
 | targeted edit of an existing file | `edit` |
-| find files by path pattern | `glob` |
-| search file contents | `grep` |
-| run shell commands (TDD, verification, git) | `pwsh` (PowerShell); long runs: `run_in_background` + `job_output` / `job_kill` |
+| find files by path pattern | `glob` (dsh-ops: `ops_glob`) |
+| search file contents | `grep` (dsh-ops: `ops_grep`) |
+| run shell commands (TDD, verification, git) | `pwsh` (PowerShell), or `bash` when dsh-ops replaces the shell; long runs: `run_in_background` + `job_output` / `job_kill` |
 | dispatch a subagent / task | `subagent` (self-contained prompt) or `subagent_fork` (inherits the conversation); steer with `send_message`, list with `list_agents`, stop with `interrupt_agent` |
 | create a todo / task list | `todo_write` |
 | ask your human partner a question | `ask_user_question` |
@@ -23,10 +23,16 @@ actions like this:
 
 ## Notes
 
+- **Replacement bundles.** The session-start bootstrap resolves the
+  `read`/`glob`/`grep`/shell names against the live tool surface, so it already
+  names the `ops_*`/`bash` replacements when dsh-ops is installed. This table
+  lists both spellings so the reference stays truthful with or without a
+  replacement bundle.
 - **No native skill tool in context?** If the `skill` tool is not available in
-  your current context, reading the target skill's `SKILL.md` directly with
-  `read` is the sanctioned mechanism on this harness — that honors the rule
-  rather than breaking it. Each skill's resource hint shows its base directory.
+  your current context, reading the target skill's `SKILL.md` directly with the
+  file-inspection tool (`read`, or `ops_inspect_local_file` under dsh-ops) is
+  the sanctioned mechanism on this harness — that honors the rule rather than
+  breaking it. Each skill's resource hint shows its base directory.
 - **Bundled scripts**: some skills invoke scripts shipped next to them (e.g.
   `scripts/foo.sh`). Invoke them through their interpreter — `bash
   scripts/foo.sh` — never as a bare `./scripts/foo.sh`; installers may strip
